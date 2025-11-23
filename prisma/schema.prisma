@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  name      String
+  price     Float
+  createdAt DateTime @default(now())
+}
+
+model Articulo {
+  IDarticulo     Int                 @id @default(autoincrement())
+  Nombre         String
+  Precio         Decimal
+  Tamaño         Float
+  Talla          String
+
+  // Clave foránea → CategoriaArticulo
+  IDcategoria    Int
+  categoria      CategoriaArticulo   @relation(fields: [IDcategoria], references: [IDcategoria])
+}
+
+model CategoriaArticulo {
+  IDcategoria        Int          @id @default(autoincrement())
+  Nombre             String
+  FechaModificacion  DateTime
+
+  // Relación inversa (lista)
+  articulos          Articulo[]
+}
