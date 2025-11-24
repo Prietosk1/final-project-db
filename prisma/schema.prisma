@@ -13,23 +13,16 @@ datasource db {
   provider = "postgresql"
 }
 
-model Product {
-  id        Int      @id @default(autoincrement())
-  name      String
-  price     Float
-  createdAt DateTime @default(now())
-}
-
 model Articulo {
   IDarticulo     Int                 @id @default(autoincrement())
   Nombre         String
-  Precio         Decimal
+  Precio         Decimal @db.Decimal(12,2)
   Tamaño         Float
   Talla          String
-
-  // Clave foránea → CategoriaArticulo
   IDcategoria    Int
   categoria      CategoriaArticulo   @relation(fields: [IDcategoria], references: [IDcategoria])
+  detalle DetallePedido[]
+  inventario Inventario[]
 }
 
 model CategoriaArticulo {
@@ -37,6 +30,84 @@ model CategoriaArticulo {
   Nombre             String
   FechaModificacion  DateTime
 
-  // Relación inversa (lista)
+ 
   articulos          Articulo[]
+}
+
+model Inventario {
+  IDarticulo Int @id
+  articulo Articulo @relation(fields: [IDarticulo],references:[IDarticulo])
+  NumEstanteria Int
+  CantDisponible Int
+}
+
+model Empleado{
+  IDempleado Int @id @default(autoincrement())
+  Nombre String
+  Apellido String
+  cargo String
+  TelEmpresa Int
+  MailEmpresa String
+  Nacimiento DateTime
+  pedidos      Pedido[]   
+}
+
+model Cliente{
+  IDcliente Int @id @default(autoincrement())
+  Nombre String
+  Apellido String
+  Tel Int
+  Mail String
+  Nacimiento DateTime
+  pedidos      Pedido[]  
+}
+model Repartidor {
+  IDrepartidor Int @id @default(autoincrement())
+  Nombre String
+  Apellido String
+  Vehiculo String
+  Placa String
+  TelEmpresa Int
+  Nacimiento DateTime
+  pedidos      Pedido[]  
+}
+
+model MetodoPago {
+  IDmetodo Int @id  @default(autoincrement())
+  Banco String
+  FormatoPago String
+  NumCuenta Int
+  pedidos      Pedido[]  
+}
+
+model Pedido {
+  IDpedido Int       @id @default(autoincrement())
+  IDvendedor Int 
+  empleado Empleado   @relation(fields:[IDvendedor],references:[IDempleado])
+  IDcliente Int
+  cliente Cliente     @relation(fields:[IDcliente],references:[IDcliente])
+  IDmetodoPago Int
+  pago MetodoPago     @relation(fields:[IDmetodoPago],references: [IDmetodo])
+  FechaInicio DateTime
+  FechaEntrega DateTime
+  Direccion String
+  IDrepartidor Int
+  repartidor Repartidor @relation(fields:[IDrepartidor],references:[IDrepartidor])
+  EstadoVenta Boolean   @default(true)
+  TotalVenta Decimal    @db.Decimal(14,2)
+
+  detalle DetallePedido[]
+}
+
+model DetallePedido {
+  IDdetalle Int
+  IDpedido Int
+  pedido Pedido @relation(fields:[IDpedido],references:[IDpedido])
+  IDarticulo Int
+  articulo Articulo @relation(fields:[IDarticulo],references:[IDarticulo])
+  CantidadArti Int
+  Descuento Decimal  @db.Decimal(5,2)
+  ValorTotal Decimal @db.Decimal(12,2)
+
+  @@id([IDdetalle,IDpedido])
 }
