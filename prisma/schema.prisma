@@ -17,8 +17,6 @@ model Articulo {
   IDarticulo     Int                 @id @default(autoincrement())
   Nombre         String
   Precio         Decimal @db.Decimal(12,2)
-  Tamaño         Float
-  Talla          String
   IDcategoria    Int
   categoria      CategoriaArticulo   @relation(fields: [IDcategoria], references: [IDcategoria])
   detalle DetallePedido[]
@@ -53,7 +51,7 @@ model Empleado{
 }
 
 model Cliente{
-  IDcliente Int @id @default(autoincrement())
+  IDcliente Int @id 
   Nombre String
   Apellido String
   Tel Int
@@ -76,7 +74,7 @@ model MetodoPago {
   IDmetodo Int @id  @default(autoincrement())
   Banco String
   FormatoPago String
-  NumCuenta Int
+  NumCuenta Float
   pedidos      Pedido[]  
 }
 
@@ -100,7 +98,7 @@ model Pedido {
 }
 
 model DetallePedido {
-  IDdetalle Int
+  IDdetalle Int 
   IDpedido Int
   pedido Pedido @relation(fields:[IDpedido],references:[IDpedido])
   IDarticulo Int
@@ -110,4 +108,16 @@ model DetallePedido {
   ValorTotal Decimal @db.Decimal(12,2)
 
   @@id([IDdetalle,IDpedido])
+}
+model Usuario {
+  IDusuario Int @id @default(autoincrement())
+  username  String @unique
+  password  String
+  rol       Rol
+}
+
+enum Rol {
+  ADMIN
+  VENDEDOR
+  REPARTIDOR
 }
