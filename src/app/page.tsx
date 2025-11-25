@@ -1,271 +1,216 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
+//import Image from 'next/image'; // ← IMPORT NECESARIO
 
-// =====================
-// TIPOS
-// =====================
+import Header from '@/components/Header';
+import ProductoCard from '@/components/ProductoCard';
+import DetalleProducto from '@/components/DetalleProducto';
+import CarritoModal from '@/components/CarritoModal';
+import LoginEmpleado from '@/components/LoginEmpleado';
+import VistaEmpleados from '@/components/VistaEmpleado'; // ← CORREGIDO
+import { Producto, ItemCarrito } from '@/types';
+import SideMenu from '@/components/SideMenu';
+import ModalDatosCliente from '@/components/ModalDatosCliente';
 
-type Producto = {
-  id: number;
-  nombre: string;
-  precio: number;
-  imagen: string;
-};
-
-type ItemCarrito = {
-  id: number;
-  nombre: string;
-  precio: number;
-  cantidad: number;
-};
-
-const constantes = 2;
-let hola = 2;
-
-hola = 5;
-
-// =====================
-// COMPONENTE PRINCIPAL
-// =====================
+// ----------- Productos de ejemplo -----------
+const productos: Producto[] = [
+  {
+    id: 1,
+    nombre: 'Bolso Rosa Cute',
+    precio: 75000,
+    imagen: '/IMG.png',
+  },
+  {
+    id: 2,
+    nombre: 'Camisa Beige Casual',
+    precio: 60000,
+    imagen: '/IMG.png',
+  },
+  {
+    id: 3,
+    nombre: 'Bolso Beige Casual',
+    precio: 65000,
+    imagen: '/IMG.png',
+  },
+  {
+    id: 4,
+    nombre: 'Bolso Casual',
+    precio: 80000,
+    imagen: '/IMG.png',
+  },
+  {
+    id: 5,
+    nombre: 'idk',
+    precio: 75000,
+    imagen: '/IMG.png',
+  },
+];
 
 export default function Home() {
-  // Menú lateral
-  const [menuAbierto, setMenuAbierto] = useState<boolean>(false);
-
-  // Vistas: "home" | "login" | "detalle"
-  const [vista, setVista] = useState<'home' | 'login' | 'detalle' | 'logout'>('home');
-
-  // Carrito tipado
-  const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
-
-  // Producto seleccionado
+  // Estados principales
+  const [vista, setVista] = useState<'home' | 'login' | 'empleados'>('home');
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
-
-  // Cantidad en el detalle
   const [cantidad, setCantidad] = useState<number>(1);
+  const [carrito, setCarrito] = useState<ItemCarrito[]>([]);
+  const [empleadoNombre, setEmpleadoNombre] = useState<string>('');
+  const [modalDatosCliente, setModalDatosCliente] = useState(false);
 
-  // =====================
-  // Productos de prueba
-  // =====================
-
-  const jabon: Producto = {
-    id: 1,
-    imagen: 'https:jsjhjhdsjsd',
-    nombre: 'Jabon',
-    precio: 9000.2,
-  };
-
-  const productos: Producto[] = [
-    { id: 1, nombre: 'Bolso elegante', precio: 120000, imagen: '/IMG.png' },
-    { id: 2, nombre: 'Bolso casual', precio: 95000, imagen: '/IMG.png' },
-    { id: 3, nombre: 'Bolso girly', precio: 110000, imagen: '/IMG.png' },
-    { id: 4, nombre: 'Bolso mini', precio: 80000, imagen: '/IMG.png' },
-  ];
-
-  // =====================
-  // FUNCIONES
-  // =====================
-
-  const abrirMenu = () => setMenuAbierto(true);
-  const cerrarMenu = () => setMenuAbierto(false);
-
-  const irALogin = () => {
-    setVista('login');
-    cerrarMenu();
-  };
-
-  const abrirProducto = (p: Producto) => {
-    setProductoSeleccionado(p);
+  // Abrir detalle del producto
+  const abrirProducto = (producto: Producto) => {
+    setProductoSeleccionado(producto);
     setCantidad(1);
-    setVista('detalle');
   };
 
+  // Cerrar detalle del producto
+  const cerrarProducto = () => {
+    setProductoSeleccionado(null);
+  };
+
+  // Agregar al carrito
   const agregarAlCarrito = () => {
     if (!productoSeleccionado) return;
 
-    const item: ItemCarrito = {
-      id: productoSeleccionado.id,
-      nombre: productoSeleccionado.nombre,
-      precio: productoSeleccionado.precio,
-      cantidad,
-    };
+    setCarrito((prev) => {
+      const existe = prev.find((i) => i.id === productoSeleccionado.id);
 
-    setCarrito([...carrito, item]);
-    alert('Producto añadido al carrito');
+      if (existe) {
+        return prev.map((i) =>
+          i.id === productoSeleccionado.id ? { ...i, cantidad: i.cantidad + cantidad } : i,
+        );
+      }
+
+      return [
+        ...prev,
+        {
+          id: productoSeleccionado.id,
+          nombre: productoSeleccionado.nombre,
+          precio: productoSeleccionado.precio,
+          cantidad,
+          imagen: productoSeleccionado.imagen,
+        },
+      ];
+    });
+
+    cerrarProducto();
   };
 
-  // =====================
-  // RENDER PRINCIPAL
-  // =====================
+  // Eliminar del carrito
+  const eliminarDelCarrito = (id: number) => {
+    setCarrito((prev) => prev.filter((item) => item.id !== id));
+  };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-[#FFF5F7] relative">
-      {/* ===================== MENU LATERAL ===================== */}
-      {menuAbierto && (
-        <div className="absolute top-0 left-0 w-64 h-full bg-white shadow-lg p-6 z-10">
-          <h3 className="text-xl font-bold mb-6">Menú</h3>
+    <div className="min-h-screen bg-[#FFF9D9]">
+      {/* HEADER */}
+      <Header abrirMenu={() => setMenuAbierto(true)} abrirCarrito={() => setCarritoAbierto(true)} />
 
-          <button
-            className="w-full text-left py-2 px-3 bg-zinc-100 rounded mb-3"
-            onClick={irALogin}
-          >
-            Empleado
-          </button>
+      {/* MENU LATERAL */}
+      <SideMenu
+        abierto={menuAbierto}
+        onCerrar={() => setMenuAbierto(false)}
+        onEmpleados={() => setVista('login')}
+      />
 
-          <button className="mt-10 w-full bg-pink-300 py-2 rounded" onClick={cerrarMenu}>
-            Cerrar
-          </button>
-        </div>
-      )}
-
-      {/* ===================== HEADER ===================== */}
-      <header className="w-full bg-[#F3D6D6] py-6 px-6 flex items-center justify-between">
-        <button className="text-3xl cursor-pointer" onClick={abrirMenu}>
-          ☰
-        </button>
-        <h1 className="text-4xl tracking-[0.4em] font-semibold text-[#4B2E2E]">V A N E</h1>
-        <div className="flex items-center gap-6 text-3xl">
-          <span>🛒</span>
-          <span>⋮⋮⋮</span>
-        </div>
-      </header>
-
-      {/* ===================== VISTA LOGIN ===================== */}
-      {vista === 'login' && (
-        <div className="flex flex-col items-center justify-center py-20 bg-[#FFF9D9]">
-          <div className="bg-[#fbe2e2] p-10 rounded-3xl shadow-md w-96">
-            <h2 className="text-center font-bold text-xl mb-6 text-[#4B2E2E]">
-              INICIO DE SESIÓN PARA EMPLEADOS
-            </h2>
-
-            <input
-              type="text"
-              placeholder="Username"
-              className="w-full mb-4 px-3 py-2 rounded shadow"
-            />
-
-            <input
-              type="password"
-              placeholder="Password"
-              className="w-full mb-6 px-3 py-2 rounded shadow"
-            />
-
-            <button
-              className="w-full bg-[#4B2E2E] text-white py-2 rounded"
-              onClick={() => alert('Buscar empleado en BD')}
-            >
-              INICIAR SESIÓN
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ===================== VISTA DETALLE ===================== */}
-      {vista === 'detalle' && productoSeleccionado && (
-        <div className="flex flex-col items-center py-16 bg-[#FFF9D9]">
-          <div className="bg-white rounded-3xl shadow p-6 flex flex-col md:flex-row gap-8 w-[80%] max-w-3xl">
-            <Image
-              src={productoSeleccionado.imagen}
-              alt="Producto"
-              width={250}
-              height={250}
-              className="object-cover"
-            />
-
-            <div className="flex flex-col justify-center w-full">
-              <div className="bg-[#F3D6D6] text-[#4B2E2E] font-bold py-2 text-center rounded mb-4">
-                {productoSeleccionado.nombre}
-              </div>
-
-              <p className="text-lg mb-4">Precio: ${productoSeleccionado.precio}</p>
-
-              {/* Contador */}
-              <div className="flex items-center gap-4 mb-4">
-                <button
-                  onClick={() => setCantidad(Math.max(1, cantidad - 1))}
-                  className="w-8 h-8 rounded-full bg-[#F3C0C8] text-xl"
-                >
-                  –
-                </button>
-
-                <span className="text-xl">{cantidad}</span>
-
-                <button
-                  onClick={() => setCantidad(cantidad + 1)}
-                  className="w-8 h-8 rounded-full bg-[#F3C0C8] text-xl"
-                  id=""
-                >
-                  +
-                </button>
-              </div>
-
-              <p className="font-bold mb-6">Subtotal: ${cantidad * productoSeleccionado.precio}</p>
-
-              <button
-                id="boton-carrito"
-                className="bg-[#4B2E2E] text-white py-2 rounded"
-                onClick={agregarAlCarrito}
-              >
-                Añadir al carrito
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ===================== VISTA HOME ===================== */}
+      {/* ======= HOME PRINCIPAL ======= */}
       {vista === 'home' && (
-        <>
-          {/* Search */}
-          <section className="w-full flex flex-col items-center py-8 bg-[#FFF9D9]">
-            <div className="w-10/12 flex items-center bg-white rounded-full shadow px-4 py-3">
-              <span className="text-zinc-400 mr-2">🔍</span>
+        <div className="px-6 py-10 bg-[#FFF7C8] min-h-screen">
+          {/* BUSCADOR */}
+          <div className="flex justify-center mb-6">
+            <div className="flex items-center bg-white border border-gray-300 rounded-full w-full max-w-2xl px-4 py-2 shadow">
+              <span className="text-[#5A2E1C] mr-2 text-xl">🔍</span>
               <input
                 type="text"
                 placeholder="Buscar producto"
-                className="w-full outline-none text-zinc-500"
+                className="w-full outline-none text-[#5A2E1C]"
               />
             </div>
-          </section>
+          </div>
 
-          {/* Productos */}
-          <section className="px-10 py-6 bg-[#FFF9D9]">
-            <h2 className="text-2xl font-extrabold text-[#4B2E2E] mb-6">PRODUCTOS DESTACADOS</h2>
+          {/* CATEGORÍAS */}
+          <div className="flex justify-center gap-4 mb-10">
+            <button className="bg-[#FFF9D9] border border-[#5A2E1C] text-[#5A2E1C] px-6 py-2 rounded-full font-bold shadow">
+              TODAS
+            </button>
+            <button className="bg-white border border-[#5A2E1C] text-[#5A2E1C] px-6 py-2 rounded-full shadow">
+              CAT1
+            </button>
+            <button className="bg-white border border-[#5A2E1C] text-[#5A2E1C] px-6 py-2 rounded-full shadow">
+              CAT2
+            </button>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {productos.map((p) => (
-                <div
-                  key={p.id}
-                  className="bg-white rounded-3xl shadow p-4 flex flex-col items-center"
-                >
-                  <Image
-                    src={p.imagen}
-                    alt="Producto"
-                    width={150}
-                    height={150}
-                    className="object-cover"
-                  />
+          {/* TÍTULO */}
+          <h2 className="text-2xl font-extrabold text-[#5A2E1C] text-center mb-6 tracking-wide">
+            PRODUCTOS DESTACADOS
+          </h2>
 
-                  <p className="mt-4 font-normal text-[#4B2E2E]">{p.nombre}</p>
-                  <p className="text-zinc-700">${p.precio}</p>
-
-                  <button
-                    className="mt-3 w-8 h-8 rounded-full bg-[#F3C0C8]"
-                    onClick={() => abrirProducto(p)}
-                  >
-                    h
-                  </button>
-                </div>
-              ))}
-            </div>
-          </section>
-        </>
+          {/* TARJETAS DE PRODUCTOS */}
+          <div
+            className="
+  grid 
+  grid-cols-2
+  sm:grid-cols-3
+  lg:grid-cols-4
+  xl:grid-cols-5
+  gap-8
+  place-items-center
+"
+          >
+            {productos.map((p) => (
+              <ProductoCard key={p.id} producto={p} onClick={() => abrirProducto(p)} />
+            ))}
+          </div>
+        </div>
       )}
 
-      {/* Footer */}
-      <footer className="w-full h-24 bg-[#F3D6D6] mt-10"></footer>
+      {/* LOGIN */}
+      {vista === 'login' && (
+        <LoginEmpleado
+          onSuccess={(username) => {
+            setEmpleadoNombre(username);
+            setVista('empleados');
+          }}
+        />
+      )}
+
+      {/* EMPLEADOS */}
+      {vista === 'empleados' && (
+        <VistaEmpleados username={empleadoNombre} onLogout={() => setVista('home')} />
+      )}
+
+      {/* ======= MODAL DETALLE PRODUCTO ======= */}
+      {productoSeleccionado && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="w-full flex justify-center items-center">
+            <DetalleProducto
+              producto={productoSeleccionado}
+              cantidad={cantidad}
+              onCambiarCantidad={setCantidad}
+              onAgregar={agregarAlCarrito}
+              onVolver={cerrarProducto}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* CARRITO */}
+      {carritoAbierto && (
+        <CarritoModal
+          carrito={carrito}
+          onCerrar={() => setCarritoAbierto(false)}
+          onEliminar={eliminarDelCarrito}
+          onRealizarPago={() => {
+            setCarritoAbierto(false);
+            setModalDatosCliente(true);
+          }}
+        />
+      )}
+
+      {/* MODAL DATOS DEL CLIENTE */}
+      {modalDatosCliente && <ModalDatosCliente onCerrar={() => setModalDatosCliente(false)} />}
     </div>
   );
 }
