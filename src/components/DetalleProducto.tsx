@@ -19,19 +19,19 @@ export default function DetalleProducto({
 }: DetalleProductoProps) {
   return (
     <div
-      className="
-        bg-white
-        rounded-3xl
-        shadow-2xl
-        border border-pink-200
-        w-[95%]
-        max-w-3xl
-        max-h-[90vh]
-        overflow-y-auto
-        p-8
-        animate-fadeIn
-        relative
-      "
+      className={`
+    bg-white
+    rounded-3xl
+    shadow-2xl
+    border border-pink-200
+    w-[95%]
+    max-w-3xl
+    max-h-[90vh]
+    overflow-y-auto
+    p-8
+    animate-fadeIn
+    relative
+  `.trim()}
       style={{
         boxShadow: '0 0 20px rgba(255, 192, 203, 0.5), 0 0 40px rgba(255, 182, 193, 0.3)',
       }}
@@ -39,18 +39,18 @@ export default function DetalleProducto({
       {/* BOTÓN VOLVER */}
       <button
         onClick={onVolver}
-        className="
-          absolute top-4 left-4
-          text-pink-700
-          bg-pink-100
-          px-4 py-2
-          rounded-full
-          font-semibold
-          shadow
-          hover:shadow-lg
-          hover:bg-pink-200
-          transition-all
-        "
+        className={`
+    absolute top-4 left-4
+    text-pink-700
+    bg-pink-100
+    px-4 py-2
+    rounded-full
+    font-semibold
+    shadow
+    hover:shadow-lg
+    hover:bg-pink-200
+    transition-all
+  `.trim()}
       >
         ← Volver
       </button>

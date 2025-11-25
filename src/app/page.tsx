@@ -149,15 +149,15 @@ export default function Home() {
 
           {/* TARJETAS DE PRODUCTOS */}
           <div
-            className="
-  grid 
-  grid-cols-2
-  sm:grid-cols-3
-  lg:grid-cols-4
-  xl:grid-cols-5
-  gap-8
-  place-items-center
-"
+            className={`
+    grid
+    grid-cols-2
+    sm:grid-cols-3
+    lg:grid-cols-4
+    xl:grid-cols-5
+    gap-8
+    place-items-center
+  `.trim()}
           >
             {productos.map((p) => (
               <ProductoCard key={p.id} producto={p} onClick={() => abrirProducto(p)} />

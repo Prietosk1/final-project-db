@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Articulo {
+  IDarticulo     Int                 @id @default(autoincrement())
+  Nombre         String
+  Precio         Decimal @db.Decimal(12,2)
+  IDcategoria    Int
+  categoria      CategoriaArticulo   @relation(fields: [IDcategoria], references: [IDcategoria])
+  detalle DetallePedido[]
+  inventario Inventario[]
+}
+
+model CategoriaArticulo {
+  IDcategoria        Int          @id @default(autoincrement())
+  Nombre             String
+  FechaModificacion  DateTime
+
+ 
+  articulos          Articulo[]
+}
+
+model Inventario {
+  IDarticulo Int @id
+  articulo Articulo @relation(fields: [IDarticulo],references:[IDarticulo])
+  NumEstanteria Int
+  CantDisponible Int
+}
+
+model Empleado{
+  IDempleado Int @id @default(autoincrement())
+  Nombre String
+  Apellido String
+  cargo String
+  TelEmpresa Int
+  MailEmpresa String
+  Nacimiento DateTime
+  pedidos      Pedido[]   
+}
+
+model Cliente{
+  IDcliente Int @id 
+  Nombre String
+  Apellido String
+  Tel Int
+  Mail String
+  Nacimiento DateTime
+  pedidos      Pedido[]  
+}
+model Repartidor {
+  IDrepartidor Int @id @default(autoincrement())
+  Nombre String
+  Apellido String
+  Vehiculo String
+  Placa String
+  TelEmpresa Int
+  Nacimiento DateTime
+  pedidos      Pedido[]  
+}
+
+model MetodoPago {
+  IDmetodo Int @id  @default(autoincrement())
+  Banco String
+  FormatoPago String
+  NumCuenta Float
+  pedidos      Pedido[]  
+}
+
+model Pedido {
+  IDpedido Int       @id @default(autoincrement())
+  IDvendedor Int 
+  empleado Empleado   @relation(fields:[IDvendedor],references:[IDempleado])
+  IDcliente Int
+  cliente Cliente     @relation(fields:[IDcliente],references:[IDcliente])
+  IDmetodoPago Int
+  pago MetodoPago     @relation(fields:[IDmetodoPago],references: [IDmetodo])
+  FechaInicio DateTime
+  FechaEntrega DateTime
+  Direccion String
+  IDrepartidor Int
+  repartidor Repartidor @relation(fields:[IDrepartidor],references:[IDrepartidor])
+  EstadoVenta Boolean   @default(true)
+  TotalVenta Decimal    @db.Decimal(14,2)
+
+  detalle DetallePedido[]
+}
+
+model DetallePedido {
+  IDdetalle Int 
+  IDpedido Int
+  pedido Pedido @relation(fields:[IDpedido],references:[IDpedido])
+  IDarticulo Int
+  articulo Articulo @relation(fields:[IDarticulo],references:[IDarticulo])
+  CantidadArti Int
+  Descuento Decimal  @db.Decimal(5,2)
+  ValorTotal Decimal @db.Decimal(12,2)
+
+  @@id([IDdetalle,IDpedido])
+}
+model Usuario {
+  IDusuario Int @id @default(autoincrement())
+  username  String @unique
+  password  String
+  rol       Rol
+}
+
+enum Rol {
+  ADMIN
+  VENDEDOR
+  REPARTIDOR
+}
